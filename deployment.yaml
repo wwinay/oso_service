@@ -1,0 +1,103 @@
+apiVersion: v1
+kind: DeploymentConfig
+metadata:
+  name: fluent-test
+  namespace: wordpress-test
+  selfLink: /oapi/v1/namespaces/wordpress-test/deploymentconfigs/fluent-test
+  uid: 3c5c7703-cea7-11e7-aaec-005056bd116f
+  resourceVersion: '84876125'
+  generation: 48
+  creationTimestamp: '2017-11-21T10:32:12Z'
+  labels:
+    app: fluent-test
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+spec:
+  strategy:
+    type: Rolling
+    rollingParams:
+      updatePeriodSeconds: 1
+      intervalSeconds: 1
+      timeoutSeconds: 600
+      maxUnavailable: 25%
+      maxSurge: 25%
+    resources: {}
+    activeDeadlineSeconds: 21600
+  triggers:
+    - type: ConfigChange
+    - type: ImageChange
+      imageChangeParams:
+        automatic: true
+        containerNames:
+          - fluent-test
+        from:
+          kind: ImageStreamTag
+          namespace: wordpress-test
+          name: 'fluentd:2'
+        lastTriggeredImage: >-
+          172.30.28.61:5000/wordpress-test/fluentd@sha256:8dc55fa1eadeed3a96b7ce67d9bcf73a2639acfb973dd9080e6c164c19cb5301
+  replicas: 1
+  test: false
+  selector:
+    app: fluent-test
+    deploymentconfig: fluent-test
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: fluent-test
+        deploymentconfig: fluent-test
+      annotations:
+        openshift.io/generated-by: OpenShiftNewApp
+    spec:
+      volumes:
+        - name: fluent-test-volume-1
+          emptyDir: {}
+        - name: fluent-test-volume-2
+          emptyDir: {}
+        - name: fluent-test-volume-3
+          emptyDir: {}
+        - name: fluent-test-volume-4
+          secret:
+            secretName: fluentd-aap-secrete
+            defaultMode: 420
+      containers:
+        - name: fluent-test
+          image: '172.30.28.61:5000/wordpress-test/fluentd:without-cert1'
+          resources: {}
+          volumeMounts:
+            - name: fluent-test-volume-4
+              mountPath: /etc/td-agent/certs/
+          terminationMessagePath: /dev/termination-log
+          imagePullPolicy: IfNotPresent
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+      serviceAccountName: fluentd-service-account
+      serviceAccount: fluentd-service-account
+      securityContext: {}
+status:
+  latestVersion: 19
+  observedGeneration: 48
+  replicas: 1
+  updatedReplicas: 1
+  availableReplicas: 1
+  unavailableReplicas: 0
+  details:
+    message: config change
+    causes:
+      - type: ConfigChange
+  conditions:
+    - type: Available
+      status: 'True'
+      lastUpdateTime: '2017-11-24T09:35:40Z'
+      lastTransitionTime: '2017-11-24T09:35:40Z'
+      message: Deployment config has minimum availability.
+    - type: Progressing
+      status: 'True'
+      lastUpdateTime: '2017-11-29T13:58:04Z'
+      lastTransitionTime: '2017-11-29T13:58:02Z'
+      reason: NewReplicationControllerAvailable
+      message: replication controller "fluent-test-19" successfully rolled out
+  readyReplicas: 1
+
